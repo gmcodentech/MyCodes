@@ -1,8 +1,0 @@
-package main
-import "fmt"
-
-func main(){
-[A[B}[D
-[A
-[A[3	fmt.Println("Hello")
-}
