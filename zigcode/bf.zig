@@ -40,25 +40,25 @@ const BloomFilter = struct {
     }
 
     fn setBFBit(bf: BloomFilter, text: *[]const u8) !void {
-        const sha384hashValue = try calcHash(std.crypto.hash.sha2.Sha384, text.*);
+        const sha384hashValue = try calcHash(std.crypto.hash.sha2.Sha384, text);
 
         var pos = @mod(sha384hashValue, bf.size);
         bf.bits[pos] = 1;
         //std.debug.print("{d}",.{bf.bits[pos]});
 
-        const sha512hashValue = try calcHash(std.crypto.hash.sha2.Sha512, text.*);
+        const sha512hashValue = try calcHash(std.crypto.hash.sha2.Sha512, text);
         pos = @mod(sha512hashValue, bf.size);
         bf.bits[pos] = 1;
         //std.debug.print("{d}",.{bf.bits[pos]});
     }
 
     fn checkIfPresent(bf: BloomFilter, text: *[]const u8) bool {
-        const sha384hashValue = try calcHash(std.crypto.hash.sha2.Sha384, text.*);
+        const sha384hashValue = try calcHash(std.crypto.hash.sha2.Sha384, text);
 
         var pos = @mod(sha384hashValue, bf.size);
         const present1 = bf.bits[pos] == 1;
 
-        const sha512hashValue = try calcHash(std.crypto.hash.sha2.Sha512, text.*);
+        const sha512hashValue = try calcHash(std.crypto.hash.sha2.Sha512, text);
         pos = @mod(sha512hashValue, bf.size);
 
         const present2 = bf.bits[pos] == 1;
@@ -83,9 +83,9 @@ fn readLine(reader: anytype, buffer: []u8) !?[]const u8 {
     }
 }
 
-fn calcHash(comptime Hasher: anytype, input: []const u8) !u64 {
+fn calcHash(comptime Hasher: anytype, input: *[]const u8) !u64 {
     var h: [Hasher.digest_length]u8 = undefined;
-    Hasher.hash(input, &h, .{});
+    Hasher.hash(input.*, &h, .{});
     return try hashSum(h[0..]);
 }
 
@@ -96,8 +96,6 @@ pub fn hashSum(input: []const u8) !u64 {
     }
     return total;
 }
-
-
 //unit testing
 const expect = std.testing.expect;
 test "text check"{
