@@ -96,3 +96,18 @@ pub fn hashSum(input: []const u8) !u64 {
     }
     return total;
 }
+
+
+//unit testing
+const expect = std.testing.expect;
+test "text check"{
+	const allocator = std.testing.allocator;
+	
+	var bf = try BloomFilter.init(allocator, 1000);
+    defer bf.deinit();
+	var text : []const u8 = "gautam";
+	try bf.setBFBit(&text);
+	const present = bf.checkIfPresent(&text);
+	
+	try expect(present==true);
+}
