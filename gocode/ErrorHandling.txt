@@ -17,8 +17,8 @@ func main(){
 func GetNo() (int,error){
 	const x int = -1
 
-	if(x<-1){
-		return x, errors.new("Received a negative no")
+	if(x < -1){
+		return x, errors.New("Received a negative no")
 	}else{
 		return x, nil
 	}
