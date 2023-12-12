@@ -8,5 +8,6 @@ import (
 func main(){
 	var n = 45
 	var r = rand.Intn(n)
-	fmt.Println(n,"=", r, "+",n-r)	
+	fmt.Println(n,"=", r, "+",n-r)
+	fmt.Println(rand.Float32())	
 }
