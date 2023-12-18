@@ -1,0 +1,29 @@
+
+
+<main class="main">
+  <div class="content">
+    <div>
+      @for(pageNo of totalPages; track pageNo){
+        <a href="#" (click)="fetchProducts(pageNo)" style="margin-left:10px">{{ pageNo }}</a>
+      }
+    </div>
+    Products Data:
+    <button (click)="exportProducts()">Export</button>
+    <table>
+      <tbody>
+      @for(product of products;track product.id){
+        <tr>
+          <td>{{product.id}}</td>
+          <td>{{product.name}}</td>
+          <td>{{product.price}}</td>
+          <td>{{product.units}}</td>
+        </tr>
+      }
+    </tbody>
+    </table>
+  </div>
+</main>
+
+
+
+<router-outlet></router-outlet>
