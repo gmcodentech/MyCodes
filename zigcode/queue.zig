@@ -48,6 +48,9 @@ pub fn Queue(comptime T:type) type{
 			
 			return null;
 		}
+		
+		//add more operations to remove items from the Queue
+		
 		fn count(self:*Self) usize {
 			return self.queue.items.len;
 		}
