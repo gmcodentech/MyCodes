@@ -27,6 +27,8 @@ public class Triangle : Shape{
 	}
 }
 
+//A class or a module must be open for extension but modification
+
 public class Program{
 	public static void Main(){
 		AreaCalculator calculator = new AreaCalculator();
@@ -39,6 +41,7 @@ public class Program{
 }
 
 
+//The example violates OCP
 //public class Shape{
 //	public string TypeOfShape{get;set;}
 //	public double Height{get;set;}

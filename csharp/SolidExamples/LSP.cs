@@ -15,7 +15,7 @@ public class Dog : Animal{
 	}
 }
 
-//objects of sub types should be replace with objects of super type
+//objects of sub types should be replacable with objects of super type
 //dog can be replaced by animal type 
 //don't have any method in animal which dog can not behave i.e Fly()
 

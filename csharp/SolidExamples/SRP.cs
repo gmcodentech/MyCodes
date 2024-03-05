@@ -10,6 +10,11 @@ public class Mailer{
 	}
 }
 
+
+//A class should be responsible for single functionality
+//OR
+//There should be only one reason to change a class
+
 public class Sample{
 	public static void Main(){
 		Person person = new Person();
@@ -17,6 +22,8 @@ public class Sample{
 	}
 }
 
+
+//The following violates the SRP
 
 //public class Person{
 //	public string Name{get;set;}

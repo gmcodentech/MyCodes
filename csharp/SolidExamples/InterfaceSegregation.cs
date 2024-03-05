@@ -29,6 +29,9 @@ public class Crow : FlyingAnimal{
 	}
 }
 
+//Don't force a class to implement unwanted functionalities
+//instead split the functionalities in multiple interfaces
+
 public class Program{
 	public static void Main(){
 		Dog dog = new Dog();

@@ -63,6 +63,9 @@ public class Repository{
 	}
 }
 
+
+//High level classes should not be dependent on low level classes, 
+//instead both high and low level classes should depend on abstraction
 public class Program{
 	public static void Main(){
 		string configDBType = "SolidExamples.MongoDB"; //"SolidExamples.SqlDB";
