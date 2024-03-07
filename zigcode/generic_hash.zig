@@ -45,3 +45,26 @@ pub fn main() !void {
     try hasher.hex_hash(text);
     std.debug.print("{s}", .{hasher.hex_digest});
 }
+
+test "sha384"{
+	const h2 = "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7";
+	const text="abc";
+	
+	var hasher = HexHash(std.crypto.hash.sha2.Sha384).init(std.testing.allocator);
+    defer hasher.deinit();
+    try hasher.hex_hash(text);
+	
+	try std.testing.expectEqualStrings(hasher.hex_digest,h2);
+}
+
+test "md5"{
+	const expected = "900150983cd24fb0d6963f7d28e17f72";
+	const text="abc";
+	
+	var hasher = HexHash(std.crypto.hash.Md5).init(std.testing.allocator);
+    defer hasher.deinit();
+    try hasher.hex_hash(text);
+	
+	try std.testing.expectEqualStrings(hasher.hex_digest,expected);
+}
+	
