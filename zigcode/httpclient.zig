@@ -10,11 +10,27 @@ pub fn main() !void {
 
     var headers = http.Headers{ .allocator = allocator };
     defer headers.deinit();
+	
+	var uri = try std.Uri.parse("http://admin:1234@localhost:5984/productsdb/_all_docs");
+	uri.user = "admin";
+    uri.password = "1234";
+	
+	//base64 encoding			
+	var buffer: [0x100]u8 = undefined;
+	const user_pass = try std.fmt.allocPrint(allocator,"{s}:{s}",.{uri.user.?,uri.password.?});
+	defer allocator.free(user_pass);
+	
+	const encoded = std.base64.standard.Encoder.encode(&buffer, user_pass);
+	
+	const auth_key=try std.fmt.allocPrint(allocator,"Basic {s}",.{encoded});
+	defer allocator.free(auth_key);
+	
+	try headers.append("Authorization", auth_key);
 
     var client = http.Client{ .allocator = allocator };
     defer client.deinit();
 
-    const uri = try std.Uri.parse("http://admin:1234@localhost:5984");
+    
     var req = if (is_zig_12) blk: {
         var req = try client.request(.GET, uri, headers, .{});
         errdefer req.deinit();
