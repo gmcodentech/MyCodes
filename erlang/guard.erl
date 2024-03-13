@@ -1,4 +1,4 @@
-module(total).
+-module(total).
 
 display(N) when N > 10 ->
 	io:fwrite("greater");

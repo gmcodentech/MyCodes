@@ -1,4 +1,4 @@
-module(add).
+-module(add).
 
 addtwo(A,B) ->
  io:fwrite("~w",[A+B]).

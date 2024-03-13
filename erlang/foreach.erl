@@ -1,4 +1,4 @@
-module(total).
+-module(total).
 
 main(_) ->
 	Display = fun(X) -> io:fwrite("~w~n",[X]) end,

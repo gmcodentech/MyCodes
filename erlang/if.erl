@@ -1,4 +1,4 @@
-module(ifexample).
+-module(ifexample).
 
 main(_) ->
 	X = 10,

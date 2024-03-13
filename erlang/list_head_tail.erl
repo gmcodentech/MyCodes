@@ -1,4 +1,4 @@
-module(gettotal).
+-module(gettotal).
 
 total([N|T]) -> N + total(T);
 total([]) -> 0.

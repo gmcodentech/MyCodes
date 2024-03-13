@@ -1,4 +1,4 @@
-module(recordexample).
+-module(recordexample).
 
 -record(person,{name,age=12,salary}).
 

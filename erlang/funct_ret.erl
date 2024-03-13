@@ -1,4 +1,4 @@
-module(function).
+-module(function).
 
 addtwo(A,B) -> A + B.
 

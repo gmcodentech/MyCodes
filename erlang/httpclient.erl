@@ -1,4 +1,4 @@
-module(httpget).
+-module(httpget).
 
 main(_) ->
 	inets:start(),
