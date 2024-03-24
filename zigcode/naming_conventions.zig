@@ -1,4 +1,4 @@
-//This is not a code but a excerb from 'https://www.openmymind.net/Zig-Quirks/'
+//This is not a code but an excerb from 'https://www.openmymind.net/Zig-Quirks/'
 //for understanding the naming conventions , this is added for my reference
 
 // In general:
