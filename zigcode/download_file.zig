@@ -3,9 +3,9 @@ const http = std.http;
 const print = std.debug.print;
 
 pub fn main() !void{
-	const uri = try std.Uri.parse("https://www.rust-lang.org/logos/rust-logo-512x512.png");
-	var segments = std.mem.splitBackwardsSequence(u8, uri.path, "/");	
-	const file_name = segments.first();	
+	const uri = try std.Uri.parse("http://httpbin.org/image/jpeg");
+		
+	const file_name = "image.jpeg";	
 	
 	var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
