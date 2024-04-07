@@ -1,5 +1,5 @@
 const std = @import("std");
-const Math = @import("Math.zig");
+const Math = @import("mods.zig").Math;
 
 pub fn main() void{
 	var maths = Math.init(23,3);
