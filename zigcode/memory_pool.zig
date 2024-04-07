@@ -19,3 +19,11 @@ pub fn main() !void {
 const User = struct{
 	id:u32,
 };
+
+// NOTE:
+// MemoryPool allocator is very useful when we create and destory object frequentyly. 
+// Underlying memory allocation uses a separate list of destroyed objects. 
+// When we need objects again, the list object is retrieved. 
+// First time object are created using GeneralPurposeAllocator allocator. 
+// Because of this , this allocation is fast. 
+// This makes memory pool allocator work on one type Because it needs to work on same size.
