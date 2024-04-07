@@ -7,6 +7,7 @@ long long unsigned get_total(long long int no){
 	}
 	return total;
 }
+/*This is some comment*/
 int main(){
 	int n;
 	printf("Enter a no:");
