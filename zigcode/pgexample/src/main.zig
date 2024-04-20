@@ -1,3 +1,4 @@
+//The following example used zig pg library pg.zig url - https://github.com/karlseguin/pg.zig/tree/master
 const std = @import("std");
 const pg = @import("pg");
 
