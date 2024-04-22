@@ -19,7 +19,9 @@ pub fn main() !void{
 	
 	try server.listen(address);
 	
-	
+	var connCounter:usize = 0;
+	var connections:[10] std.Thread = undefined;
+	while(connCounter <= 10){
 	const server_thread = try std.Thread.spawn(.{}, (struct {
         fn apply(s: *std.http.Server) !void {
 				var res = try s.accept(.{
@@ -47,5 +49,13 @@ pub fn main() !void{
 		}
     }).apply, .{&server});
 	
-	server_thread.join();
+	connections[connCounter]=server_thread;
+	connCounter += connCounter;
+	}
+	
+	for (connections) |thread|{
+		thread.join();
+	}
+	
+	std.debug.print("completed...",.{});
 }
