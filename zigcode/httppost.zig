@@ -8,62 +8,30 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var headers = http.Headers{ .allocator = allocator };
-    defer headers.deinit();
-	
-	var uri = try std.Uri.parse("http://localhost:5984/productsdb/0fc1c515b1cabe19f084ee04af00009f");//"http://localhost:5024/add-two-nos");
-		
-	uri.user = "admin";
-    uri.password = "1234";
-	
-	//base64 encoding			
-	var buffer: [0x100]u8 = undefined;
-	const user_pass = try std.fmt.allocPrint(allocator,"{s}:{s}",.{uri.user.?,uri.password.?});
-	defer allocator.free(user_pass);
-	
-	const encoded = std.base64.standard.Encoder.encode(&buffer, user_pass);
-	
-	const auth_key=try std.fmt.allocPrint(allocator,"Basic {s}",.{encoded});
-	defer allocator.free(auth_key);
-	
-	try headers.append("Authorization", auth_key);	
-	try headers.append("accept", "application/json");
-	try headers.append("Content-Type", "application/json");	
+    var uri = try std.Uri.parse("http://localhost:5984/productsdb/0fc1c515b1cabe19f084ee04af00009f");
+
+    uri.user = .{ .raw = "admin" };
+    uri.password = .{ .raw = "1234" };
 
     var client = http.Client{ .allocator = allocator };
     defer client.deinit();
+    var buf: [1024]u8 = undefined;
+    const payload =
+        \\ {
+        \\	"name":"burger",
+        \\	"price":1545.50,
+        \\ 	"units":124
+        \\ }
+    ;
 
-    const reqData = "{\"name\":\"burger\",\"price\":42.2,\"units\":850}";
-	
-    var req = if (is_zig_11) blk: {
-        var req = try client.request(.PUT, uri, headers, .{});
-        errdefer req.deinit();
-
-		req.transfer_encoding=.chunked;
-			
-		try req.start();
-		
-		var wrtr = req.writer();
-        try wrtr.writeAll(reqData);
-		try req.finish();
-		
-		break :blk req;
-    } else blk: {
-        var req = try client.open(.PUT, uri, headers, .{});
-        errdefer req.deinit();
-		
-		req.transfer_encoding=.chunked;
-		
-        try req.send(.{});
-		
-		var wrtr = req.writer();
-        try wrtr.writeAll(reqData);
-		try req.finish();
-        
-		break :blk req;
-    };
+    var req = try client.open(.PUT, uri, .{ .server_header_buffer = &buf });
     defer req.deinit();
 
+    req.transfer_encoding = .{ .content_length = payload.len };
+    try req.send();
+    var wtr = req.writer();
+    try wtr.writeAll(payload);
+    try req.finish();
     try req.wait();
 
     //try std.testing.expectEqual(req.response.status, .ok);
