@@ -52,9 +52,10 @@ const Auth = struct {
 };
 
 pub fn main() !void {
+	const portno:u8 = 8085;
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
-	std.debug.print("server is started...\n",.{});
+	std.debug.print("server is started at {d}\n",.{portno});
 	
 	const product = try Product.init(gpa.allocator(),".Net",50.5);
 	defer product.deinit();
@@ -66,7 +67,7 @@ pub fn main() !void {
 	const _cors = tk.Cors{.origin = "http://localhost:4200"};
     var server = try tk.Server.start(gpa.allocator(), handler, 
 		.{.injector = try tk.Injector.from(.{product,auth}), 
-		.port = 8080,
+		.port = portno,
 		.cors = _cors,
 		});
     
