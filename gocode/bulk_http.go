@@ -18,7 +18,7 @@ func makeResponses(reqs int, rc chan Resp, sem chan bool) {
     for reqs > 0 {
         select {
         case sem <- true:
-            req, _ := http.NewRequest("GET", "http://localhost:8080/api/total/10", nil)
+            req, _ := http.NewRequest("GET", "http://localhost:5882/api/total/10000", nil)
             transport := &http.Transport{}
             resp, err := transport.RoundTrip(req)
             r := Resp{resp, err}
@@ -53,8 +53,8 @@ func getResponses(rc chan Resp) int {
 }
 
 func main() {
-    reqs := 100
-    maxConcurrent := 100
+    reqs := 1000
+    maxConcurrent := 10
     runtime.GOMAXPROCS(runtime.NumCPU())
     rc := make(chan Resp)
     sem := make(chan bool, maxConcurrent)

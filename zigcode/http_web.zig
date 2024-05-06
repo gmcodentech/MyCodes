@@ -25,7 +25,7 @@ pub fn main() !void {
 	router.get("/api/total/:no",getTotal);
 	router.deleteC("/v1/session", logout, .{.dispatcher = loggedIn});
 	
-	router.postC("/api/book/save",saveBook,.{.dispatcher = loggedIn});
+	router.postC("/api/book/save",saveBook,.{.digspatcher = loggedIn});
 	router.get("/api/books",getBooks);
 	
 	var admin_routes = router.group("/admin",.{.dispatcher = loggedIn});
