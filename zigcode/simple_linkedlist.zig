@@ -5,19 +5,28 @@ pub fn main() !void{
 	defer _ = gpa.deinit();
 	const allocator = gpa.allocator();
 	
-	const listInt = LinkedList(u32);
-	var list = listInt.init(allocator);
+	//const listInt = LinkedList(u32);
+	var list = LinkedList(u32).init(allocator);
 	defer list.deinit();
 	try list.add(43);
 	try list.add(90);
 	try list.add(8);
+	try list.add(4);
+	try list.add(31);
+	try list.add(59);
 	std.debug.print("{d}\n",.{list.len()});
+	const arr = try list.traverse();
+	defer allocator.free(arr);
+	std.debug.print("{any}\n",.{arr});
 	list.remove(90);
-	list.remove(43);
+	list.remove(4);
 	try list.add(950);
 	std.debug.print("{d}\n",.{list.len()});
 	const found = list.search(950);
-	std.debug.print("Found {any}\n",.{found});
+	std.debug.print("Found {d} {any}\n",.{950,found});
+	const arr1 = try list.traverse();
+	defer allocator.free(arr1);
+	std.debug.print("{any}\n",.{arr1});
 }
      
 fn LinkedList(comptime T:type) type {
@@ -65,6 +74,19 @@ fn LinkedList(comptime T:type) type {
 			return false;
 		}
 		
+		fn traverse(self:*Self) ![]T {
+			var arr = try self.allocator.alloc(T,self.len());
+			var i:usize = 0;
+			var it = self.first;
+			while(it) |node|{
+				arr[i] = node.data;
+				i += 1;
+				it = node.next;
+			}
+			
+			return arr;
+		}
+		
 		
 		fn remove(self:*Self,value:T) void{
 			var it = self.first;
@@ -76,7 +98,7 @@ fn LinkedList(comptime T:type) type {
 					self.allocator.destroy(node);
 					prev.?.next = next;
 				}
-				
+				prev = node;
 				it = next;
 			}
 		}
