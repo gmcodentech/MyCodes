@@ -10,6 +10,7 @@ pub fn main() !void{
 	defer list.deinit();
 	try list.add(43);
 	try list.add(90);
+	try list.add(40);
 	try list.add(8);
 	try list.add(4);
 	try list.add(31);
@@ -18,8 +19,8 @@ pub fn main() !void{
 	const arr = try list.traverse();
 	defer allocator.free(arr);
 	std.debug.print("{any}\n",.{arr});
-	list.remove(90);
 	list.remove(4);
+	list.remove(59);
 	try list.add(950);
 	std.debug.print("{d}\n",.{list.len()});
 	const found = list.search(950);
@@ -88,13 +89,23 @@ fn LinkedList(comptime T:type) type {
 		}
 		
 		
+		
 		fn remove(self:*Self,value:T) void{
+		
+			std.debug.print("removing... {d}\n",.{value});
+			if(self.first.?.data == value){
+				const next = self.first.?.next;
+				self.allocator.destroy(self.first.?);
+				self.first = next;
+			}			
+			
 			var it = self.first;
 			var prev = self.first;
+			
 			while(it) |node|{
 				const next = node.next;
 				if(node.data == value){
-					std.debug.print("removing... {d}\n",.{node.data});
+					
 					self.allocator.destroy(node);
 					prev.?.next = next;
 				}
