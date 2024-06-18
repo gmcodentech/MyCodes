@@ -14,7 +14,7 @@ pub fn main()!void{
 		}
 		var parser = Parser.init(user_input);
 		const result = parser.parse();
-		std.debug.print("{}", .{result});
+		std.debug.print("{d}", .{result});
 
 		//std.debug.print("{s}",.{user_input});		
 	}
@@ -35,6 +35,8 @@ const Token = enum {
 	Minus,
     Asterisk,
     Number,
+    LParen,
+    RParen,
     Eof,
 };
 
@@ -50,7 +52,9 @@ const Tokenizer = struct {
                 '+' => return Token.Plus,
 				'-' => return Token.Minus,
                 '*' => return Token.Asterisk,
-                '0'...'9' => {
+                '(' => return Token.LParen,
+                ')' => return Token.RParen,
+                '0'...'9', '.' => {
                     self.index -= 1;
                     return Token.Number;
                 },
@@ -61,11 +65,30 @@ const Tokenizer = struct {
         return Token.Eof;
     }
 
-    pub fn numberValue(self: *Tokenizer) i64 {
-        var value: i64 = 0;
-        while (self.index < self.input.len and self.input[self.index] >= '0' and self.input[self.index] <= '9') {
-            value = value * 10 + @as(i64, self.input[self.index] - '0');
-            self.index += 1;
+    pub fn numberValue(self: *Tokenizer) f64 {
+        var value: f64 = 0;
+        var is_float: bool = false;
+        var fraction_multiplier: f64 = 0.1;
+
+        while (self.index < self.input.len) {
+            const c = self.input[self.index];
+            if (c >= '0' and c <= '9') {
+                if (is_float) {
+                    value += fraction_multiplier * @as(f64,@floatFromInt(c - '0'));
+                    fraction_multiplier *= 0.1;
+                } else {
+                    value = value * 10 + @as(f64,@floatFromInt(c - '0'));
+                }
+                self.index += 1;
+            } else if (c == '.') {
+                if (is_float) {
+                    @panic("Invalid number format");
+                }
+                is_float = true;
+                self.index += 1;
+            } else {
+                break;
+            }
         }
         return value;
     }
@@ -82,12 +105,13 @@ const Parser = struct {
         };
     }
 
-    pub fn parse(self: *Parser) i64 {
+    pub fn parse(self: *Parser) f64 {
         self.current_token = self.tokenizer.nextToken();
-        return self.parseExpression();
+        const result = self.parseExpression();
+		return result;
     }
 
-    fn parseExpression(self: *Parser) i64 {
+    fn parseExpression(self: *Parser) f64 {
         var result = self.parseTerm();
         while (self.current_token == Token.Plus) {
             self.current_token = self.tokenizer.nextToken();
@@ -100,7 +124,7 @@ const Parser = struct {
         return result;
     }
 
-    fn parseTerm(self: *Parser) i64 {
+    fn parseTerm(self: *Parser) f64 {
         var result = self.parseFactor();
         while (self.current_token == Token.Asterisk) {
             self.current_token = self.tokenizer.nextToken();
@@ -109,13 +133,22 @@ const Parser = struct {
         return result;
     }
 
-    fn parseFactor(self: *Parser) i64 {
+    fn parseFactor(self: *Parser) f64 {
         if (self.current_token == Token.Number) {
             const value = self.tokenizer.numberValue();
             self.current_token = self.tokenizer.nextToken();
             return value;
+        } else if (self.current_token == Token.LParen) {
+            self.current_token = self.tokenizer.nextToken();
+            const value = self.parseExpression();
+            if (self.current_token != Token.RParen) {
+                @panic("Expected closing parenthesis");
+            }
+            self.current_token = self.tokenizer.nextToken();
+            return value;
         } else {
-            @panic("Expected number");
+            @panic("Expected number or parenthesis");
         }
     }
 };
+
