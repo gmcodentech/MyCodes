@@ -53,7 +53,7 @@ fn bucketFactory(comptime T: type) type {
             return self.buckets.items.len;
         }
 
-        fn findElement(self: *Self, element: T) !usize {
+        fn findItem(self: *Self, element: T) !?usize {
             const hash = try getHashPosition(self.allocator, element);
             const hashValue = @mod(hash, self.maximumBuckets);
             //print("{s}-hashvalue :{d}\n",.{element,hashValue});
@@ -62,21 +62,19 @@ fn bucketFactory(comptime T: type) type {
 
             if (bucketNo) |bucket| {
                 const bucketToScan = self.buckets.items[bucket];
-                var index: usize = 0;
                 var found: bool = false;
                 for (bucketToScan.items) |item| {
                     if (std.mem.eql(u8, item, element)) {
                         found = true;
                         break;
                     }
-                    index += 1;
                 }
                 if (found) {
                     return bucket;
                 }
             }
 
-            return 0;
+            return null;
         }
 
         fn deinit(self: *Self) void {
@@ -137,7 +135,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    var factory = try bucketFactory([]const u8).init(allocator, 100);
+    var factory = try bucketFactory([]const u8).init(allocator, 15);
     defer factory.deinit();
 
     const fruits = [_][]const u8{ "Mango", "Banana", "Orange", "Mango", "Banana", "Jackfruit", "Apple" };
@@ -148,10 +146,16 @@ pub fn main() !void {
     print("Total buckets : {d}\n", .{factory.getLength()});
 
     const fruitToSearch = "Apple";
-    const bucket = try factory.findElement(fruitToSearch);
-    if (bucket >= 0) {
-        print("Found {s} in bucket no. {d}", .{ fruitToSearch, bucket });
+    const bucket = try factory.findItem(fruitToSearch);
+    if (bucket) |bucketNo| {
+        print("Found {s} in bucket no. {d}\n", .{ fruitToSearch, bucketNo });
     } else {
-        print("{s} not found in any bucket", .{});
+        print("{s} not found in any bucket\n", .{fruitToSearch});
+    }
+
+    if (try factory.findItem("Berry")) |bucketNo| {
+        print("Berry found in {d}\n", .{bucketNo});
+    } else {
+        print("Berry not found!", .{});
     }
 }
