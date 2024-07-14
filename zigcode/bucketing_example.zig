@@ -39,13 +39,13 @@ fn bucketFactory(comptime T: type) type {
             if (posFound) |position| {
                 var requiredList = self.buckets.items[position];
                 try requiredList.append(element);
-                print("{s} inserted in existing bucket {d}\n", .{ element, position });
+                print("{s} dropped in existing bucket {d}\n", .{ element, position });
             } else {
                 var newList = std.ArrayList(T).init(self.allocator);
                 try newList.append(element);
                 try self.buckets.append(newList);
                 try hashmap.put(hashValue, self.buckets.items.len - 1);
-                print("{s} inserted in new bucket {d}\n", .{ element, self.buckets.items.len - 1 });
+                print("{s} dropped in new bucket {d}\n", .{ element, self.buckets.items.len - 1 });
             }
         }
 
@@ -53,18 +53,18 @@ fn bucketFactory(comptime T: type) type {
             return self.buckets.items.len;
         }
 
-        fn findElementInList(self: *Self, element: T) !usize {
+        fn findElement(self: *Self, element: T) !usize {
             const hash = try getHashPosition(self.allocator, element);
             const hashValue = @mod(hash, 10);
             //print("{s}-hashvalue :{d}\n",.{element,hashValue});
 
-            const posFound = hashmap.get(hashValue) orelse null;
+            const bucketNo = hashmap.get(hashValue) orelse null;
 
-            if (posFound) |position| {
-                const listToScan = self.buckets.items[position];
+            if (bucketNo) |bucket| {
+                const bucketToScan = self.buckets.items[bucket];
                 var index: usize = 0;
                 var found: bool = false;
-                for (listToScan.items) |item| {
+                for (bucketToScan.items) |item| {
                     if (std.mem.eql(u8, item, element)) {
                         found = true;
                         break;
@@ -72,7 +72,7 @@ fn bucketFactory(comptime T: type) type {
                     index += 1;
                 }
                 if (found) {
-                    return position;
+                    return bucket;
                 }
             }
 
@@ -140,14 +140,18 @@ pub fn main() !void {
     var factory = try bucketFactory([]const u8).init(allocator, 100);
     defer factory.deinit();
 
-    const nos = [_][]const u8{ "Welcome", "Sweet", "Home", "Sweet", "Tweet", "Beautiful", "Home" };
-    for (nos) |no| {
-        try factory.addItem(no);
+    const fruits = [_][]const u8{ "Mango", "Banana", "Orange", "Mango", "Banana", "Jackfruit", "Apple" };
+    for (fruits) |fruit| {
+        try factory.addItem(fruit);
     }
 
     print("Total buckets : {d}\n", .{factory.getLength()});
 
-    const strToFind = "Tweet";
-    const posFound = try factory.findElementInList(strToFind);
-    print("Found {s} in bucket no. {d}", .{ strToFind, posFound });
+    const fruitToSearch = "Apple";
+    const bucket = try factory.findElement(fruitToSearch);
+    if (bucket >= 0) {
+        print("Found {s} in bucket no. {d}", .{ fruitToSearch, bucket });
+    } else {
+        print("{s} not found in any bucket", .{});
+    }
 }
