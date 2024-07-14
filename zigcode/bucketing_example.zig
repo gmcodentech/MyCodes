@@ -32,20 +32,20 @@ fn bucketFactory(comptime T: type) type {
 
         fn addItem(self: *Self, element: T) !void {
             const hash = try getHashPosition(self.allocator, element);
-            const hashValue = @mod(hash, 10);
+            const hashValue = @mod(hash, self.maximumBuckets);
             //print("{s}-hashvalue :{d}\n",.{element,hashValue});
             const posFound = hashmap.get(hashValue) orelse null;
 
             if (posFound) |position| {
                 var requiredList = self.buckets.items[position];
                 try requiredList.append(element);
-                print("{s} dropped in existing bucket {d}\n", .{ element, position });
+                print("{s} (hash value {d}) dropped in existing bucket {d}\n", .{ element, hashValue, position });
             } else {
                 var newList = std.ArrayList(T).init(self.allocator);
                 try newList.append(element);
                 try self.buckets.append(newList);
                 try hashmap.put(hashValue, self.buckets.items.len - 1);
-                print("{s} dropped in new bucket {d}\n", .{ element, self.buckets.items.len - 1 });
+                print("{s} (hash value {d}) dropped in new bucket {d}\n", .{ element, hashValue, self.buckets.items.len - 1 });
             }
         }
 
@@ -55,7 +55,7 @@ fn bucketFactory(comptime T: type) type {
 
         fn findElement(self: *Self, element: T) !usize {
             const hash = try getHashPosition(self.allocator, element);
-            const hashValue = @mod(hash, 10);
+            const hashValue = @mod(hash, self.maximumBuckets);
             //print("{s}-hashvalue :{d}\n",.{element,hashValue});
 
             const bucketNo = hashmap.get(hashValue) orelse null;
