@@ -1,111 +1,106 @@
 const std = @import("std");
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    var allocator = gpa.allocator();
-
-    const bf_size: u64 = 1000;
-    var bf = try BloomFilter.init(allocator, bf_size);
-    defer bf.deinit();
-
-    for (bf.bits) |*b| {
-        b.* = @as(u1, 0);
-    }
-
-    const stdin = std.io.getStdIn();
-    defer stdin.close();
-
-    var txtBuf: [20]u8 = undefined;
-    std.debug.print("Enter a text to set :", .{});
-    var text1 = (try readLine(stdin.reader(), &txtBuf)).?;
-
-    try bf.setBFBit(&text1);
-
-    std.debug.print("Enter a text to check the presence :", .{});
-    var text2 = (try readLine(stdin.reader(), &txtBuf)).?;
-    if (bf.checkIfPresent(&text2)) {
-        std.debug.print("Present", .{});
-    } else {
-        std.debug.print("Absent", .{});
-    }
+fn print(comptime fmt:[]const u8, values:anytype)void{
+	std.debug.print(fmt++"\n",values);
 }
 
+pub fn main() !void{
+	var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+	defer _ = gpa.deinit();
+	const allocator =  gpa.allocator();
+	  
+	const BF = try BloomFilter.init(allocator,10);
+	defer BF.deinit();
+	  
+	try BF.add("Sweet"); 
+	try BF.add("Apple");
+	print("Total entries: {d}",.{BF.len()});
+	
+	print("Found:{any}",.{BF.search("Applde")});
+	  
+}
+  
 const BloomFilter = struct {
-    bits: []u1,
-    allocator: std.mem.Allocator,
-    size: u64,
-
-    fn init(allocator: std.mem.Allocator, size: u64) !BloomFilter {
-        return .{ .allocator = allocator, .bits = try allocator.alloc(u1, size), .size = size };
-    }
-
-    fn setBFBit(bf: BloomFilter, text: *[]const u8) !void {
-        const sha384hashValue = try calcHash(std.crypto.hash.sha2.Sha384, text);
-
-        var pos = @mod(sha384hashValue, bf.size);
-        bf.bits[pos] = 1;
-        //std.debug.print("{d}",.{bf.bits[pos]});
-
-        const sha512hashValue = try calcHash(std.crypto.hash.sha2.Sha512, text);
-        pos = @mod(sha512hashValue, bf.size);
-        bf.bits[pos] = 1;
-        //std.debug.print("{d}",.{bf.bits[pos]});
-    }
-
-    fn checkIfPresent(bf: BloomFilter, text: *[]const u8) bool {
-        const sha384hashValue = try calcHash(std.crypto.hash.sha2.Sha384, text);
-
-        var pos = @mod(sha384hashValue, bf.size);
-        const present1 = bf.bits[pos] == 1;
-
-        const sha512hashValue = try calcHash(std.crypto.hash.sha2.Sha512, text);
-        pos = @mod(sha512hashValue, bf.size);
-
-        const present2 = bf.bits[pos] == 1;
-        return present1 and present2;
-    }
-
-    fn deinit(self: *BloomFilter) void {
-        self.allocator.free(self.bits);
-    }
+		allocator:std.mem.Allocator,
+		filter:[]u1,
+		size:u64,
+		index:usize=0,
+		  
+		const Self = @This();
+		fn init(allocator:std.mem.Allocator,size:u64)!*Self{
+			const bloom_filter = try allocator.create(Self);
+			bloom_filter.* = Self{.allocator = allocator,.size=size, .filter = try allocator.alloc(u1,size)};
+			@memset(bloom_filter.filter, 0);
+			return bloom_filter;
+		}
+		 
+		fn add(self:*Self,entry:[]const u8) !void{
+			const position = @mod(try getHashedIndex(self.allocator,entry), self.size);
+			self.filter[position]=1;
+			self.index += 1;
+		}
+		
+		fn search(self:*Self,entry:[]const u8) !bool{
+			const position = @mod(try getHashedIndex(self.allocator,entry), self.size);
+			return self.filter[position] == 1;
+		}
+		
+		fn getHashedIndex(allocator: std.mem.Allocator, element: []const u8) !u64 {
+            var hasher = HexHash(std.crypto.hash.sha2.Sha384).init(allocator);
+            defer hasher.deinit();
+            try hasher.hex_hash(element);
+            const hash = hashSum(hasher.hex_digest);
+            return hash;
+          }
+          
+          fn hashSum(input: []const u8) u64 {
+            var total: u64 = 0;
+            for (input[0..]) |ch| {
+                total += @as(u8, ch);
+            }
+            return total;
+        	}
+		  
+		fn deinit(self:*Self)void{
+			self.allocator.free(self.filter);
+			self.allocator.destroy(self);
+		}
+		  
+		fn len(self:*Self)usize{
+			return self.index;
+		}
 };
 
-fn readLine(reader: anytype, buffer: []u8) !?[]const u8 {
-    var line = (try reader.readUntilDelimiterOrEof(
-        buffer,
-        '\n',
-    )) orelse return null;
 
-    if (@import("builtin").os.tag == .windows) {
-        return std.mem.trimRight(u8, line, "\r");
-    } else {
-        return line;
-    }
-}
+fn HexHash(comptime Hasher: anytype) type {
+    return struct {
+        allocator: std.mem.Allocator,
+        hex_digest: []u8 = undefined,
 
-fn calcHash(comptime Hasher: anytype, input: *[]const u8) !u64 {
-    var h: [Hasher.digest_length]u8 = undefined;
-    Hasher.hash(input.*, &h, .{});
-    return try hashSum(h[0..]);
-}
+        const Self = @This();
+        fn init(allocator: std.mem.Allocator) Self {
+            return Self{ .allocator = allocator };
+        }
 
-pub fn hashSum(input: []const u8) !u64 {
-    var total: u64 = 0;
-    for (input[0..]) |ch| {
-        total += @as(u8, ch);
-    }
-    return total;
-}
-//unit testing
-const expect = std.testing.expect;
-test "text check" {
-    const allocator = std.testing.allocator;
+        fn hex_hash(self: *Self, input: []const u8) !void {
+            const digest = _hasher_digest(input);
 
-    var bf = try BloomFilter.init(allocator, 1000);
-    defer bf.deinit();
-    var text: []const u8 = "gautam";
-    try bf.setBFBit(&text);
-    const present = bf.checkIfPresent(&text);
+            self.hex_digest = try std.fmt.allocPrint(
+                self.allocator,
+                "{s}",
+                .{std.fmt.fmtSliceHexLower(&digest)},
+            );
+        }
+        fn _hasher_digest(input: []const u8) [Hasher.digest_length]u8 {
+            var hasher = Hasher.init(.{});
+            hasher.update(input);
+            var out: [Hasher.digest_length]u8 = undefined;
+            hasher.final(out[0..]);
+            return out;
+        }
 
-    try expect(present == true);
+        fn deinit(self: *Self) void {
+            self.allocator.free(self.hex_digest);
+        }
+    };
 }
