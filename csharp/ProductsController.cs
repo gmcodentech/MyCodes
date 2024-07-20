@@ -101,7 +101,6 @@ public class ProductsController : ControllerBase{
                 var colIndex = col.colIndex;
                 var value = rowValues[colIndex];
                 prop.SetValue(obj,Convert.ChangeType(value,prop.PropertyType));
-//thanks for watching this video...
             }
             if(obj!=null){
             list.Add(obj);
