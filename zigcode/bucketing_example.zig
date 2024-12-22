@@ -30,8 +30,8 @@ fn bucketFactory(comptime T: type) type {
             return hash;
         }
 
-        fn addItem(self: *Self, element: T) !void {
-            const hash = try getHashPosition(self.allocator, element);
+        fn addItem(self: *Self,bucket_col:[]const u8, element: T) !void {
+            const hash = try getHashPosition(self.allocator, bucket_col);
             const hashValue = @mod(hash, self.maximumBuckets);
             //print("{s}-hashvalue :{d}\n",.{element,hashValue});
             const posFound = hashmap.get(hashValue) orelse null;
@@ -140,7 +140,7 @@ pub fn main() !void {
 
     const fruits = [_][]const u8{ "Mango", "Banana", "Orange", "Mango", "Banana", "Jackfruit", "Apple" };
     for (fruits) |fruit| {
-        try factory.addItem(fruit);
+        try factory.addItem(fruit,fruit);
     }
 
     print("Total buckets : {d}\n", .{factory.getLength()});
