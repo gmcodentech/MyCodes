@@ -8,12 +8,12 @@ pub fn main() !void {
     const ltoc = try ZDSV(Movie).init(allocator);
     defer ltoc.deinit();
 
-    const objects = try ltoc.get("C:\\Software\\Dotnet\\Data\\cleanhashed.txt", "#", true, 1000);
+    const objects = try ltoc.get("C:\\Software\\Dotnet\\Data\\cleanhashed.txt", "#", true, 100);
 
     std.debug.print("Total movies {d}\n", .{objects.items.len});
     var inc: usize = 0;
     for (objects.items) |object| {
-        std.debug.print("{s} {d} {d} {s} {s}\n", .{ object.tconst, object.start_year, object.run_len, object.primary_title, object.genres });
+        std.debug.print("{s:12}|{d:5}|{d:5}|{s:80}|{s:30}\n", .{ object.tconst, object.start_year, object.run_len, object.primary_title, object.genres });
         inc += 1;
         if (inc == 20) {
             break;
@@ -64,7 +64,7 @@ pub fn ZDSV(comptime T: type) type {
 
                 try objects.append(obj);
 
-                if (counter == n) {
+                if (n != 0 and counter == n) {
                     break;
                 }
             } else |err| switch (err) {
@@ -102,7 +102,7 @@ pub fn ZDSV(comptime T: type) type {
         }
 
         fn getValue(comptime data_type: type, value: []const u8) !data_type {
-            const dsv = std.mem.trimRight(u8, value, "\r");
+            const dsv = std.mem.trimLeft(u8,std.mem.trimRight(u8, value, "\r"),"");
             const typeInfo = @typeInfo(data_type);
             switch (typeInfo) {
                 .Int => return try std.fmt.parseInt(data_type, dsv, 10),

@@ -2,9 +2,9 @@ const std = @import("std");
  
 test "arrenaa" {
 	
-	var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
-	defer arena.deinit();
-	 
+		var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
+		defer arena.deinit();
+		 
 	const allocator = arena.allocator();
 	 
 	
