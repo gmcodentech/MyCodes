@@ -1,0 +1,12 @@
+services:
+  zig:
+    container_name: code
+    environment:
+     - TEST_PORT=4300
+    ports:
+     - "3300:4300"
+    build: .
+    tty: true
+    stdin_open: true
+    
+    

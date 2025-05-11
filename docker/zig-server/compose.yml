@@ -1,0 +1,15 @@
+services:
+ app:
+  container_name: code
+  build: .
+  ports:
+   - "3500:3500"
+  environment:
+   - TEST_PORT=3500
+  tty: true
+  stdin_open: true
+  develop:
+   watch:
+    - action: rebuild
+      path: .
+      target: /code

@@ -1,0 +1,4 @@
+services: 
+    a-curl:
+        image: alpine-curl:latest
+        command: /bin/ash
