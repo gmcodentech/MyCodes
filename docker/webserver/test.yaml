@@ -1,0 +1,5 @@
+services:
+    web:
+        image: newweb:latest
+        ports:
+            - "3200:3000"
