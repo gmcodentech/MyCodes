@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: couchdb-ingress
+spec:
+  rules:
+  - host: mycouchdb.localhost
+    http:
+      paths: 
+      - path: /
+        pathType: Prefix
+        backend:
+          service: 
+            name: couchdb-service
+            port:
+              number: 5984
