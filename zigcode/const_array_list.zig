@@ -10,7 +10,8 @@ pub fn main() !void{
 	defer book.deinit();
 	
 	//book.title="PHP";
-	//print("Book information - Title: {s}   Price: {d}",.{book.title,book.price});
+	print("Book information\n",.{});
+	print("----------------------------------------\n",.{});
 	//checkPrice(book);
 	
 	var books = std.ArrayList(*const Book).init(allocator);
@@ -36,7 +37,7 @@ pub fn main() !void{
 
 pub fn checkPrice(book: *const Book) void{
 	//book.price += 2; //error, can't change book because it is a const object
-	print("\nName: {s}  Price: {d}",.{book.title,book.price});
+	print("Name: {s}  Price: {d}\n",.{book.title,book.price});
 }
 
 const Book = struct{
