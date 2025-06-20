@@ -35,8 +35,13 @@ pub fn ZDSV(comptime T: type) type {
                     header_line_processed = true;
                     continue;
                 }
+				
                 const str = try self.allocator.dupe(u8, line.items);
-                const obj = try getObject(self.allocator, str, sep);
+				const current_line = std.mem.trimRight(u8, str, "\r");
+				if(current_line.len == 0){
+					continue;
+				}
+                const obj = try getObject(self.allocator, current_line, sep);
 
                 try objects.append(obj);
 
@@ -52,12 +57,12 @@ pub fn ZDSV(comptime T: type) type {
         }
 
         fn getObject(allocator: std.mem.Allocator, line: []const u8, sep: []const u8) !T {
-            const st = @typeInfo(T).Struct;
+            const st = @typeInfo(T).@"struct";
             const obj = try allocator.create(T);
             const field_count = st.fields.len;
 
             var tokens = try allocator.alloc([]const u8, field_count);
-            var it = std.mem.split(u8, line, sep);
+            var it = std.mem.splitSequence(u8, line, sep);
             var i: usize = 0;
             while (it.next()) |p| {
                 tokens[i] = p;
@@ -80,11 +85,13 @@ pub fn ZDSV(comptime T: type) type {
         fn getValue(comptime data_type: type, value: []const u8) !data_type {
             const dsv = std.mem.trimRight(u8, value, "\r");
             const typeInfo = @typeInfo(data_type);
-            switch (typeInfo) {
-                .Int => return try std.fmt.parseInt(data_type, dsv, 10),
-                .Float => return try std.fmt.parseFloat(data_type, dsv),
-                else => return dsv,
-            }
+            return switch (typeInfo) {
+                .int => try std.fmt.parseInt(data_type, dsv, 10),
+                .float => try std.fmt.parseFloat(data_type, dsv),
+                .comptime_int => try std.fmt.parseInt(data_type, dsv, 10),
+                .comptime_float => try std.fmt.parseFloat(data_type, dsv),
+                else => dsv,
+            };
         }
     };
 }
