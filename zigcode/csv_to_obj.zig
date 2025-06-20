@@ -4,11 +4,12 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 	
-	var lines = try allocator.alloc([]const u8,3);
+	var lines = try allocator.alloc([]const u8,4);
 	defer allocator.free(lines);
 	lines[0]="Milk,44.5,300,1";
 	lines[1]="Sugar,53.3,90,0";
 	lines[2]="Tea,5.3,190,1";
+	lines[3]="Coffee,8.5,58,1";
 	
 	
 	var json_map = std.StringHashMap([]const u8).init(allocator);
@@ -77,7 +78,7 @@ fn CSVToJson(comptime T:type) type{
 
 
 fn getJson(comptime T: type, allocator: std.mem.Allocator, line: []const u8,separator:[]const u8) ![]const u8 {
-    const st = @typeInfo(T).Struct;
+    const st = @typeInfo(T).@"struct";
     const obj = try allocator.create(T);
     defer allocator.destroy(obj);
 
@@ -86,7 +87,7 @@ fn getJson(comptime T: type, allocator: std.mem.Allocator, line: []const u8,sepa
     var tokens = try allocator.alloc([]const u8, field_count);
     defer allocator.free(tokens);
 
-    var it = std.mem.split(u8, line, separator);
+    var it = std.mem.splitSequence(u8, line, separator);
     var i: usize = 0;
     while (it.next()) |p| {
         tokens[i] = p;
@@ -105,10 +106,10 @@ fn getJson(comptime T: type, allocator: std.mem.Allocator, line: []const u8,sepa
 fn getValue(comptime data_type: type, value: []const u8) !data_type {
 
 	return switch(@typeInfo(data_type)){
-		.Int => try std.fmt.parseInt(data_type, value, 10),
-		.Float => try std.fmt.parseFloat(data_type, value),
-		.ComptimeInt => try std.fmt.parseInt(data_type, value, 10),
-		.ComptimeFloat => try std.fmt.parseFloat(data_type, value),
+		.int => try std.fmt.parseInt(data_type, value, 10),
+		.float => try std.fmt.parseFloat(data_type, value),
+		.comptime_int => try std.fmt.parseInt(data_type, value, 10),
+		.comptime_float => try std.fmt.parseFloat(data_type, value),
 		else => value,
 	};
 }
