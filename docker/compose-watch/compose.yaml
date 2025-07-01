@@ -1,0 +1,11 @@
+services:
+  products-api:
+    build:
+      context: ./
+    ports:
+     - "5000:80"
+    develop:
+      watch:
+      - action: sync+restart
+        path: ./publish
+        target: ./app
