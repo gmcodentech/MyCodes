@@ -15,7 +15,7 @@ pub const HttpClient = struct {
         self.client.deinit();
     }
     pub fn send(self: *Self, method: http.Method, input_url: []const u8, payload: []u8) ![]u8 {
-        if (method == .PUT) {
+        if (method == .PUT or method == .POST) {
             return post_req(self, method, input_url, payload);
         }
         return get_req(self, method, input_url);
@@ -49,8 +49,11 @@ pub const HttpClient = struct {
         uri.password = .{ .raw = self.password };
 
         var buf: [1024]u8 = undefined;
-
-        var req = try self.client.open(method, uri, .{ .server_header_buffer = &buf });
+		
+		var headers:[1]http.Header=undefined;
+		headers[0]=http.Header{.name="Content-Type", .value="application/json"};
+	
+        var req = try self.client.open(method, uri, .{ .server_header_buffer = &buf,.extra_headers = &headers });
         defer req.deinit();
 
         req.transfer_encoding = .{ .content_length = payload.len };
