@@ -16,6 +16,12 @@ fn testUser(allocator:std.mem.Allocator)!void{
 	var db = DB(User).init(allocator,"catalog","admin","admin");
 	defer db.deinit();
 	
+	const db_exists = try db.checkForDb("catalog");
+	if(!db_exists){
+		print("database does not exists. created the db.\n",.{});
+		_ = try db.createDb();
+	}
+	
 	// const id = try allocator.dupe(u8,"0");
     // defer allocator.free(id);
 	
@@ -24,8 +30,8 @@ fn testUser(allocator:std.mem.Allocator)!void{
 		// print("\nUser saved!",.{});
 	// }
 	
-	const db_exists = try db.checkForDb("test");
-	print("{}",.{db_exists});
+	const users = try db.search(.{.selector=.{.power=4000}});
+	print("{any}",.{users});
 }
 
 fn testProduct(allocator:std.mem.Allocator)!void{

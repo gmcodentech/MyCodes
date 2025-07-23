@@ -32,10 +32,15 @@ pub fn DB(comptime T: type) type {
             ok: bool,
             id: []u8,
             rev: []u8,
-        };
-		
+        };	
+
+		const SearchResult = struct{
+			docs:[]T,
+			bookmark:[]u8,
+		};
 
         const UUIDResponse = struct { uuids: [][]u8 };
+		
         pub fn init(allocator: std.mem.Allocator, database_name: []const u8,username:[]const u8,password:[]const u8) Self {
             arena = std.heap.ArenaAllocator.init(allocator);
             const arenaAllocator = arena.allocator();
@@ -46,6 +51,13 @@ pub fn DB(comptime T: type) type {
             self.client.deinit();
             arena.deinit();
         }
+		
+		pub fn createDb(self:*Self) !bool{
+			const url = try std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ self.base_url, self.database_name });
+            defer self.allocator.free(url);
+            _ = try self.client.send(.PUT, url, "");
+			return true;
+		}
 		
 		pub fn checkForDb(self:*Self,db:[]const u8) !bool{
 			const url = try std.fmt.allocPrint(self.allocator, "{s}/_all_dbs", .{ self.base_url });
@@ -81,6 +93,22 @@ pub fn DB(comptime T: type) type {
             defer self.allocator.free(url);
             defer self.allocator.free(json);
             return save(self, url, .PUT, json);
+        }
+		
+		pub fn search(self: *Self, query: anytype) ![]T {
+            const json = try std.json.stringifyAlloc(self.allocator, query, .{ .whitespace = .indent_2 });
+			//const selector_json =  try std.fmt.allocPrint(self.allocator, "selector:{s}", .{ json });
+			
+            const url = try std.fmt.allocPrint(self.allocator, "{s}/{s}/_find", .{ self.base_url, self.database_name });
+
+            defer self.allocator.free(url);
+			//defer self.allocator.free(selector_json);
+            defer self.allocator.free(json);
+			
+			const result_json = try self.client.send(.POST, url, json);
+            const parsed_result = try std.json.parseFromSlice(SearchResult, self.allocator, result_json, .{ .ignore_unknown_fields = true });
+			
+            return parsed_result.value.docs;
         }
 
         pub fn update(self: *Self, item: T) !RecordCreateResponse {

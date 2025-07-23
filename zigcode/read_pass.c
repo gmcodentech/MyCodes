@@ -13,6 +13,6 @@ int main(void){
         p++; 
     }while(password[p-1]!='\r'); 
     //password[p-1]='&#092;&#048;'; 
-    printf("\npassword %s ",password); 
+    printf("password %s ",password); 
     getch(); 
 } 
