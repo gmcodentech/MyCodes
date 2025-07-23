@@ -30,8 +30,12 @@ fn testUser(allocator:std.mem.Allocator)!void{
 		// print("\nUser saved!",.{});
 	// }
 	
-	const users = try db.search(.{.selector=.{.power=4000}});
-	print("{any}",.{users});
+	
+	const mangoQuery=.{.selector=.{.power=3900}};
+	const users = try db.search(mangoQuery);
+	for(users) |u|{
+		print("\n{d}",.{u.power});
+	}
 }
 
 fn testProduct(allocator:std.mem.Allocator)!void{

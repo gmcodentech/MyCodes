@@ -38,6 +38,8 @@ pub fn DB(comptime T: type) type {
 			docs:[]T,
 			bookmark:[]u8,
 		};
+		
+
 
         const UUIDResponse = struct { uuids: [][]u8 };
 		
@@ -95,14 +97,12 @@ pub fn DB(comptime T: type) type {
             return save(self, url, .PUT, json);
         }
 		
-		pub fn search(self: *Self, query: anytype) ![]T {
-            const json = try std.json.stringifyAlloc(self.allocator, query, .{ .whitespace = .indent_2 });
-			//const selector_json =  try std.fmt.allocPrint(self.allocator, "selector:{s}", .{ json });
+		pub fn search(self: *Self, mangoQuery: anytype) ![]T {
 			
+            const json = try std.json.stringifyAlloc(self.allocator, mangoQuery, .{ .whitespace = .indent_2 });
             const url = try std.fmt.allocPrint(self.allocator, "{s}/{s}/_find", .{ self.base_url, self.database_name });
 
             defer self.allocator.free(url);
-			//defer self.allocator.free(selector_json);
             defer self.allocator.free(json);
 			
 			const result_json = try self.client.send(.POST, url, json);
