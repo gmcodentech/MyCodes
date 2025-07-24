@@ -1,7 +1,8 @@
 const std = @import("std");
 const print = std.debug.print;
-const DB = @import("DB.zig").DB;
-
+const couch = @import("DB.zig");
+const DB = couch.DB;
+const Info = couch.Info;
 pub fn main() !void {
     var dbg = std.heap.DebugAllocator(.{}){};
     defer _ = dbg.deinit();
@@ -13,29 +14,42 @@ pub fn main() !void {
 }
 
 fn testUser(allocator:std.mem.Allocator)!void{
-	var db = DB(User).init(allocator,"catalog","admin","admin");
+	var db = DB(User).init(allocator,"crm","admin","admin");
 	defer db.deinit();
 	
-	const db_exists = try db.checkForDb("catalog");
-	if(!db_exists){
-		print("database does not exists. created the db.\n",.{});
-		_ = try db.createDb();
-	}
+	// const metadata:Info = try db.getDbMetadata();
+	// print("Total documents: {d}",.{metadata.doc_count});
+	
+	// const list = try db.getList(3);
+	// for(list) |u|{
+		// print("\nType:{s} id:{s} Power:{d}",.{u.type,u._id,u.power});
+	// }
+	
+	// const db_exists = try db.checkForDb("crm");
+	// if(!db_exists){
+		// print("database does not exist. created the db.\n",.{});
+		// _ = try db.createDb();
+	// }
 	
 	// const id = try allocator.dupe(u8,"0");
     // defer allocator.free(id);
-	
-	// const saved_response = try db.create(.{.power=4000});
+	// for(1..1000)|i|{
+		// const r = 1 + i;
+		// const saved_response = try db.create(.{.type="user",.power=r});
+		// _ = saved_response;
+	// }
 	// if(saved_response.ok){
 		// print("\nUser saved!",.{});
 	// }
 	
 	
-	const mangoQuery=.{.selector=.{.power=3900}};
+	const mangoQuery=.{.selector=.{.type="user"},.limit=100};
 	const users = try db.search(mangoQuery);
-	for(users) |u|{
-		print("\n{d}",.{u.power});
-	}
+	print("\nTotal Users: {d}",.{users.len});
+	
+	// for(users) |u|{
+		// print("\n{s} {d}",.{u.type,u.power});
+	// }
 }
 
 fn testProduct(allocator:std.mem.Allocator)!void{
@@ -80,12 +94,14 @@ fn testProduct(allocator:std.mem.Allocator)!void{
 const User = struct {
     _id: []u8,
     _rev: []u8,
+	type:[]u8,
     power: u32,
 };
 
 const Product = struct {
     _id: []u8,
     _rev: []u8,
+	type:[]u8,
     name: []u8,
     price: f32,
     units: i32 = 0,
