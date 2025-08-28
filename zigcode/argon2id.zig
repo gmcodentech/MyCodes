@@ -6,9 +6,9 @@ pub fn main() !void {
 	defer _ = dbg.deinit();
 	const allocator = dbg.allocator();
 
-    const password = "anotherpassword";
-    const salt = "salt4567890123456"; // Must be at least 8 bytes, recommended 16+
-	const pepper = "diffpepper";
+    const password = "1234";
+    const salt = "salt456789012345"; // Must be at least 8 bytes, recommended 16+
+	const pepper = "somegoodpeppersecurevalue";
 
     // Parameters for Argon2id
     const params = std.crypto.pwhash.argon2.Params{
@@ -17,7 +17,7 @@ pub fn main() !void {
         .p = 1,   // Threads
     };
 
-    const dk_len: usize = 16; // derive 32-byte key
+    const dk_len: usize = 32; // derive 32-byte key
     var derived: [dk_len]u8 = undefined;
 	
 	const concat = try std.fmt.allocPrint(allocator, "{s}{s}", .{password, pepper});
