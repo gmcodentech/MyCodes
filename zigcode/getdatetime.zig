@@ -2,8 +2,20 @@ const std = @import("std");
 const print = std.debug.print;
 
 pub fn main() !void {
-    const timestamp_ns = std.time.nanoTimestamp();
-	 const timestamp_s = @as(u64,@intCast(@divTrunc(timestamp_ns, 1_000_000_000)));
+ var dbg = std.heap.DebugAllocator(.{}){};
+ defer _ = dbg.deinit();
+ const allocator = dbg.allocator();
+ 
+ const date_time = try getToday(allocator);
+ defer allocator.free(date_time);
+ 
+ print("{s}",.{date_time});
+}
+
+
+pub fn getToday(allocator:std.mem.Allocator)![]u8{
+	const timestamp_ns = std.time.nanoTimestamp();
+	const timestamp_s = @as(u64,@intCast(@divTrunc(timestamp_ns, 1_000_000_000)));
 
     const epoch_seconds = std.time.epoch.EpochSeconds{ .secs = timestamp_s};
     
@@ -20,9 +32,7 @@ pub fn main() !void {
 	const minute = day_seconds.getMinutesIntoHour();
 	const seconds = day_seconds.getSecondsIntoMinute();
 	
-    print("Current Date: {d:0>4}-{d:0>2}-{d:0>2}\n",.{ year, month, day });
-	print("Current Time: {d:0>2}:{d:0>2}:{d:0>2}\n",.{hour,minute,seconds});
+	return try std.fmt.allocPrint(allocator,"{d:0>4}-{d:0>2}-{d:0>2} {d:0>2}:{d:0>2}:{d:0>2}",
+		.{ year, month, day, hour, minute, seconds});
 }
-
-
 
